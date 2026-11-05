@@ -2077,24 +2077,10 @@
   // --- スプラッシュ: 1.6秒で消灯（タップで即スキップ） ---
   (function(){
     var sp = document.getElementById('splash');
-    var hide = function(){ sp.classList.add('hide'); setTimeout(window.ssRepaintTop, 450); };
+    var hide = function(){ sp.classList.add('hide'); };
     setTimeout(hide, 1600);
     sp.addEventListener('click', hide);
   })();
-
-  // --- 上の帯（ロゴ）を描き直させる ---
-  // iPhoneのホーム画面アプリで、起動直後にロゴの帯が粗く描かれたままになることがあるため、
-  // 起動画面が消えたあと・アプリに戻ったときに、帯を一度だけ描き直させる（見た目は変わらない）
-  window.ssRepaintTop = function(){
-    try{
-      var ab = document.querySelector('.appbar'); if(!ab) return;
-      ab.style.transform = 'translateZ(0)';
-      void ab.offsetHeight;
-      setTimeout(function(){ ab.style.transform = ''; }, 60);
-    }catch(e){}
-  };
-  window.addEventListener('pageshow', function(){ setTimeout(window.ssRepaintTop, 150); });
-  document.addEventListener('visibilitychange', function(){ if(document.visibilityState === 'visible') setTimeout(window.ssRepaintTop, 150); });
 
   // --- 挨拶: 時間帯 × ランダムな一言 ---
   (function(){
