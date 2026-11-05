@@ -81,8 +81,7 @@
     position:sticky; top:0; z-index:20;
     display:flex; align-items:center; justify-content:space-between;
     padding:15px 18px 11px;
-    background:rgba(255,255,255,.88);
-    backdrop-filter:saturate(140%) blur(10px);
+    background:#fff;
     border-bottom:1px solid var(--line);
   }
   .appbar{ justify-content:space-between; }
@@ -1467,7 +1466,7 @@
       if(entry.flyer){ acts.push('<a class="act flyer" href="#" onclick="openFlyer();return false;">'+window.ssIcon("file",14)+' 販売店見直しチラシを見る</a>'); }
       if(hasCard){ acts.push('<a class="act" href="#" onclick="openCard();return false;">'+window.ssIcon("file",14)+' Medical Notice Card を見る</a>'); }
       if(entry.store){ acts.push('<a class="act store" href="https://mpi-store.com/" target="_blank" rel="noopener">'+window.ssIcon("cart",14)+' MPIオンラインストアで見る</a>'); }
-      if(entry.refs){ for(var r=0;r<entry.refs.length;r++){ var rf=entry.refs[r]; if(!rf || !/^https?:\/\//.test(rf.u||'')) continue; acts.push('<a class="act" href="'+esc(rf.u).replace(/"/g,'&quot;')+'" target="_blank" rel="noopener">'+window.ssIcon("external",14)+' 参考情報：'+esc(rf.t||'ページ')+'</a>'); } }
+      if(entry.refs){ for(var r=0;r<entry.refs.length;r++){ var rf=entry.refs[r]; if(!rf || !/^https?:\/\//.test(rf.u||'')) continue; var isProd=/^https?:\/\/(www\.)?mpi-store\.com(\/|$)/i.test(rf.u); acts.push('<a class="act" href="'+esc(rf.u).replace(/"/g,'&quot;')+'" target="_blank" rel="noopener">'+window.ssIcon("external",14)+(isProd?' 製品情報：mpi-store.com':' 参考情報')+'</a>'); } }
       if(acts.length) h += '<div class="actions">'+acts.join('')+'</div>';
       return h;
     };
@@ -2160,6 +2159,36 @@
     var i = (map[id] !== undefined) ? map[id] : 0;
     if(tabs.length > i) tabs[i].classList.add('active');
   }
+
+  // --- 外部リンクから戻ったとき、元の画面に戻す ---
+  // iPhoneは外部リンクを閉じたあとにアプリを読み込み直すことがあるため、
+  // 外部リンクを押す直前に開いていた画面を覚えておき、10分以内の読み込み直しなら開き直す
+  (function(){
+    var KEY='ss_return_v1', TTL=10*60*1000;
+    document.addEventListener('click', function(ev){
+      try{
+        var a = (ev.target && ev.target.closest) ? ev.target.closest('a') : null;
+        if(a && a.target==='_blank' && /^https?:/i.test(a.getAttribute('href')||'')){
+          var ids=[], st=window._pageStack||[];
+          for(var i=0;i<st.length;i++){ var p=document.getElementById(st[i]); if(p && p.classList.contains('open') && ids.indexOf(st[i])<0) ids.push(st[i]); }
+          if(ids.length) localStorage.setItem(KEY, JSON.stringify({ids:ids, at:Date.now()})); else localStorage.removeItem(KEY);
+        } else {
+          localStorage.removeItem(KEY);
+        }
+      }catch(e){}
+    }, true);
+    try{
+      var s = JSON.parse(localStorage.getItem(KEY)||'null'); localStorage.removeItem(KEY);
+      if(s && s.ids && s.ids.length && (Date.now()-s.at) >= 0 && (Date.now()-s.at) < TTL){
+        var sp=document.getElementById('splash'); if(sp) sp.classList.add('hide');
+        var last=null;
+        for(var j=0;j<s.ids.length;j++){ if(document.getElementById(s.ids[j])){ openPage(s.ids[j]); last=s.ids[j]; } }
+        if(last) syncTabForPage(last);
+        var toBottom=function(){ setTimeout(function(){ var l=document.getElementById('chat-log'); if(l) l.scrollTop=l.scrollHeight; }, 60); };
+        if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', toBottom); else toBottom();
+      }
+    }catch(e){}
+  })();
 
   // メニューから各ページへ（戻るでメニューに帰れるよう openPage を経由）
   function menuGo(id){
