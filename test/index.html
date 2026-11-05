@@ -3,7 +3,7 @@
 <head><meta name="robots" content="noindex,nofollow">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ストサポ v7｜フルデモ（全ページ遷移）</title>
+<title>ストサポ｜ストーマライフ トータルサポート</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap" rel="stylesheet">
@@ -1466,7 +1466,7 @@
       if(entry.flyer){ acts.push('<a class="act flyer" href="#" onclick="openFlyer();return false;">'+window.ssIcon("file",14)+' 販売店見直しチラシを見る</a>'); }
       if(hasCard){ acts.push('<a class="act" href="#" onclick="openCard();return false;">'+window.ssIcon("file",14)+' Medical Notice Card を見る</a>'); }
       if(entry.store){ acts.push('<a class="act store" href="https://mpi-store.com/" target="_blank" rel="noopener">'+window.ssIcon("cart",14)+' MPIオンラインストアで見る</a>'); }
-      if(entry.refs){ for(var r=0;r<entry.refs.length;r++){ var rf=entry.refs[r]; if(!rf || !/^https?:\/\//.test(rf.u||'')) continue; acts.push('<a class="act" href="'+esc(rf.u).replace(/"/g,'&quot;')+'" target="_blank" rel="noopener">'+window.ssIcon("external",14)+' 参考情報：'+esc(rf.t||'ページ')+'</a>'); } }
+      if(entry.refs){ for(var r=0;r<entry.refs.length;r++){ var rf=entry.refs[r]; if(!rf || !/^https?:\/\//.test(rf.u||'')) continue; var isProd=/^https?:\/\/(www\.)?mpi-store\.com(\/|$)/i.test(rf.u); acts.push('<a class="act" href="'+esc(rf.u).replace(/"/g,'&quot;')+'" target="_blank" rel="noopener">'+window.ssIcon("external",14)+(isProd?' 製品情報：mpi-store.com':' 参考情報：'+esc(rf.t||'ページ'))+'</a>'); } }
       if(acts.length) h += '<div class="actions">'+acts.join('')+'</div>';
       return h;
     };
