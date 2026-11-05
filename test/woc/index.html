@@ -26,6 +26,13 @@
   .points li::marker { color:var(--teal); }
   .btn { display:block; margin:22px 0 0; padding:15px 16px; border-radius:14px; background:linear-gradient(160deg,#f4ac6e 0%,#eb9650 100%); color:#fff; font-size:16px; font-weight:700; text-align:center; text-decoration:none; box-shadow:0 5px 14px rgba(226,146,78,.32); }
   footer { margin-top:26px; font-size:12px; text-align:center; color:#6b8894; }
+  /* スマホを横にしたら動画を画面いっぱいに広げる（再生は止めない） */
+  @media (orientation:landscape) and (max-height:520px) {
+    html, body { background:#000; overflow:hidden; }
+    .hero, .note, .points, .btn, footer { display:none; }
+    main { max-width:none; margin:0; padding:0; }
+    .video { position:fixed; inset:0; width:100vw; height:100vh; height:100dvh; aspect-ratio:auto; border-radius:0; box-shadow:none; background:#000; }
+  }
 </style>
 </head>
 <body>
