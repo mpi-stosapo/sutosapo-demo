@@ -2090,7 +2090,7 @@
       var ab = document.querySelector('.appbar'); if(!ab) return;
       ab.style.transform = 'translateZ(0)';
       void ab.offsetHeight;
-      requestAnimationFrame(function(){ requestAnimationFrame(function(){ ab.style.transform = ''; }); });
+      setTimeout(function(){ ab.style.transform = ''; }, 60);
     }catch(e){}
   };
   window.addEventListener('pageshow', function(){ setTimeout(window.ssRepaintTop, 150); });
