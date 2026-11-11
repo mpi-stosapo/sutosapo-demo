@@ -1406,6 +1406,8 @@
   }
   // ===== チャットの記録: 質問と結果を受け口（Apps Script ウェブアプリ）へ送る。URLが空なら送らない =====
   window.SS_LOG_URL = 'https://script.google.com/macros/s/AKfycbzk2tTGa63seyMl5Xl7IXkDCG-DlTnDLR9LyKkkwX6uTJBgciW1rCqIXUBQC4gjtxaLIw/exec';
+  // ===== AIで回答を選ぶ中継（空ならAIを呼ばない）=====
+  window.SS_AI_URL = 'https://script.google.com/macros/s/AKfycby2sVYR18f4-EXwzVr-51PmDx3aVV3emuCQuR9XIhiHyf-dvLmSnkh7vSXUKUG7cfgm2A/exec';
   window.ssLog = function(kind, q, a){
     try{
       var u = window.SS_LOG_URL; if(!u) return;
@@ -1592,19 +1594,72 @@
     };
     window.chatOpenWorryList=function(wi){ try{ closePage('page-chat'); openPage('page-onayami'); if(typeof wi==='number' && typeof openWorry==='function') openWorry(wi); }catch(e){} return false; };
 
-    function reply(text,p){
-      if(isDanger(text)){ addBot('気になる症状は、ここでの自己判断は避けてください。<b>早めに医療機関・ストーマ外来にご相談ください。</b>',p); window.ssLog('danger', text, '気になる症状は、ここでの自己判断は避けてください。早めに医療機関・ストーマ外来にご相談ください。'); return; }
-      var e=findEntry(text);
+    // ===== AIで回答を選ぶ（今の探し方で決まらないときだけ） =====
+    // AIが返してよいのは「マスターのどのQ&Aを出すか」だけ。返ってきた質問文をアプリの中のQ&Aと照合し、画面に出すのはマスターの回答文だけ。AIの文章は出さない
+    var RECENT=[], RECENT_MS=5*60*1000;
+    function recentPrev(){ var now=Date.now(), a=[]; for(var i=0;i<RECENT.length;i++){ if(now-RECENT[i].at<=RECENT_MS) a.push(RECENT[i].t); } return a.slice(-2); }
+    function rememberQ(t){ RECENT.push({t:String(t).slice(0,200), at:Date.now()}); if(RECENT.length>5) RECENT.shift(); }
+    // 候補のボタンを並べる文（AIなしの候補とAIの候補で共通）
+    function choicesHtml(text,list){
+      var items='', qs=[];
+      for(var c=0;c<list.length;c++){ var ce=list[c]; qs.push(ce.q); items+='<a class="act" href="#" onclick="chatChip(\''+esc(ce.q).replace(/'/g,'&#39;')+'\');return false;">'+esc(ce.q)+'</a>'; }
+      items+='<a class="act" href="#" onclick="chatOpenWorryList();return false;">'+window.ssIcon('list-checks',14)+' お悩み一覧から探す</a>';
+      return { html:'「'+esc(text)+'」について、近い質問はこちらです。当てはまるものを押してください。<div class="actions">'+items+'</div>', qs:qs };
+    }
+    // 今までの動き（AIを呼ばないとき、AIが使えなかったとき）
+    function replyLocal(text,p,e){
       if(e && e.choices){
-        var items='', qs=[];
-        for(var c=0;c<e.choices.length;c++){ var ce=e.choices[c]; qs.push(ce.q); items+='<a class="act" href="#" onclick="chatChip(\''+esc(ce.q).replace(/'/g,'&#39;')+'\');return false;">'+esc(ce.q)+'</a>'; }
-        items+='<a class="act" href="#" onclick="chatOpenWorryList();return false;">'+window.ssIcon('list-checks',14)+' お悩み一覧から探す</a>';
-        addBot('「'+esc(text)+'」について、近い質問はこちらです。当てはまるものを押してください。<div class="actions">'+items+'</div>',p);
-        window.ssLog('clarify', text, '（候補）'+qs.join(' / '));
+        var ch0=choicesHtml(text,e.choices);
+        addBot(ch0.html,p);
+        window.ssLog('clarify', text, '（候補）'+ch0.qs.join(' / '));
         return;
       }
       if(e){ addBot(window.ssAnswerHtml(e),p); window.ssLog('hit', text, e.a); }
       else { var ch=clarifyHtml(text); addBot(ch,p); window.ssLog('miss', text, '（聞き返し）'+ch.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').slice(0,300)); }
+    }
+    function replyAI(text,p,e,prev,url){
+      var l=el('chat-log'), w=null, done=false, ctl=null, timer=null;
+      // 待っている間の吹き出し。会話の履歴（端末への保存）には入れない
+      if(l){ w=document.createElement('div'); w.className='msg bot'; w.textContent='探しています…'; l.appendChild(w); scrollDown(); }
+      function finish(qs){
+        if(done) return; done=true; if(timer) clearTimeout(timer);
+        if(w && w.parentNode) w.parentNode.removeChild(w);
+        // 待っている間にその質問が消されていたら、何も出さない
+        var lg=el('chat-log'); if(lg && !lg.querySelector('.msg.user[data-p="'+p+'"]')) return;
+        // AIが返した質問文と、完全に同じ質問文のQ&Aだけを拾う（拾えないものは捨てる）
+        var hits=[], seen={};
+        if(qs && qs.length){
+          for(var i=0;i<qs.length;i++){
+            var s=String(qs[i]); if(seen[s]) continue;
+            for(var k=0;k<KB.length;k++){ if(KB[k].q===s){ seen[s]=1; hits.push(KB[k]); break; } }
+          }
+        }
+        if(hits.length===1){ addBot(window.ssAnswerHtml(hits[0]),p); window.ssLog('hit', text, '（AI）'+hits[0].a); return; }
+        if(hits.length>=2){
+          var ch=choicesHtml(text,hits);
+          addBot(ch.html,p);
+          window.ssLog('clarify', text, '（AI候補）'+ch.qs.join(' / '));
+          return;
+        }
+        replyLocal(text,p,e);
+      }
+      try{
+        ctl=(typeof AbortController!=='undefined') ? new AbortController() : null;
+        timer=setTimeout(function(){ try{ if(ctl) ctl.abort(); }catch(x){} finish(null); }, 8000);
+        fetch(url, { method:'POST', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({q:String(text).slice(0,200), prev:prev}), redirect:'follow', signal:(ctl?ctl.signal:undefined) })
+          .then(function(r){ return r.json(); })
+          .then(function(j){ finish(j && j.ok===true && Array.isArray(j.qs) ? j.qs : null); })
+          .catch(function(){ finish(null); });
+      }catch(x){ finish(null); }
+    }
+    function reply(text,p){
+      if(isDanger(text)){ addBot('気になる症状は、ここでの自己判断は避けてください。<b>早めに医療機関・ストーマ外来にご相談ください。</b>',p); window.ssLog('danger', text, '気になる症状は、ここでの自己判断は避けてください。早めに医療機関・ストーマ外来にご相談ください。'); return; }
+      var e=findEntry(text), prev=recentPrev();
+      rememberQ(text);
+      var url=window.SS_AI_URL;
+      // 1つに決まったとき、またはAIの設定が空のときは、AIを呼ばない
+      if(!url || (e && !e.choices)){ replyLocal(text,p,e); return; }
+      replyAI(text,p,e,prev,url);
     }
     window.chatSend=function(){ var inp=el('chat-input'); if(!inp)return; var v=(inp.value||'').trim(); if(!v)return; inp.value=''; var p=String(Date.now()); addUser(v,p); setTimeout(function(){reply(v,p);},120); };
     window.chatChip=function(t){ var p=String(Date.now()); addUser(t,p); setTimeout(function(){reply(t,p);},120); };
@@ -1879,6 +1934,7 @@
       <h3>お預かりする情報</h3>
       <p>本アプリは、会員登録やログインを必要としません。お名前、ご住所、電話番号、メールアドレスなどの、個人を特定できる情報はお預かりしません。</p>
       <p>「チャットに相談」にご入力いただいた質問文と、本アプリがお返しした回答は、回答の内容を改善する目的で当社が記録します。記録するのは、ご入力いただいた文章、回答した文章、日時、アプリの版のみです。</p>
+      <p>また、お答えする回答を選ぶために、ご入力いただいた質問文を、AIのサービス（Anthropic社のClaude）に送ることがあります。送るのは質問文だけで、お名前や端末の情報は送りません。</p>
 
       <h3>お預かりしない情報</h3>
       <ul>
