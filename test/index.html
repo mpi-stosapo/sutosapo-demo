@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
-<head>
-<meta name="robots" content="noindex,nofollow">
+<head><meta name="robots" content="noindex,nofollow">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ストサポ｜ストーマライフ トータルサポート</title>
@@ -1407,6 +1406,8 @@
   }
   // ===== チャットの記録: 質問と結果を受け口（Apps Script ウェブアプリ）へ送る。URLが空なら送らない =====
   window.SS_LOG_URL = '';
+  // ===== AIで回答を選ぶ中継（空ならAIを呼ばない）=====
+  window.SS_AI_URL = 'https://script.google.com/macros/s/AKfycby2sVYR18f4-EXwzVr-51PmDx3aVV3emuCQuR9XIhiHyf-dvLmSnkh7vSXUKUG7cfgm2A/exec';
   window.ssLog = function(kind, q, a){
     try{
       var u = window.SS_LOG_URL; if(!u) return;
@@ -1481,6 +1482,8 @@
 
     // ===== チャット =====
     function scrollDown(){ var l=el('chat-log'); if(l) l.scrollTop=l.scrollHeight; }
+    // 答えを出したら、その質問が上に来る位置まで送る（答えの最後に飛ぶと、質問と答えの頭が見えず、何も出なかったように見えるため）
+    function scrollToQ(p){ var l=el('chat-log'); if(!l) return; var u=p ? l.querySelector('.msg.user[data-p="'+p+'"]') : null; if(!u){ scrollDown(); return; } var top=l.scrollTop + (u.getBoundingClientRect().top - l.getBoundingClientRect().top) - 8; l.scrollTop=Math.max(0, top); }
     // 履歴はこのスマホの中（localStorage）だけに保存。直近50件。サーバーには送らない
     var HIST_KEY='ss_chat_v1', HIST_MAX=50, restoring=false;
     function histLoad(){ try{ var a=JSON.parse(localStorage.getItem(HIST_KEY)||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
@@ -1488,7 +1491,7 @@
     // 回答の右横のゴミ箱: その質問と回答の1組を画面と保存から消す
     window.chatDel=function(p){ if(!p) return; try{ var a=histLoad().filter(function(m){ return m.p!==p; }); localStorage.setItem(HIST_KEY, JSON.stringify(a)); }catch(e){} var l=el('chat-log'); if(!l) return; var els=l.querySelectorAll('[data-p="'+p+'"]'); for(var i=0;i<els.length;i++){ els[i].parentNode.removeChild(els[i]); } };
     function addUser(t,p){ var l=el('chat-log'); if(!l)return; var d=document.createElement('div'); d.className='msg user'; d.textContent=t; if(p) d.setAttribute('data-p',p); l.appendChild(d); histPush('u',t,p); scrollDown(); }
-    function addBot(html,p){ var l=el('chat-log'); if(!l)return; var d=document.createElement('div'); d.className='msg bot'; d.innerHTML=html; if(p){ var row=document.createElement('div'); row.className='msg-row'; row.setAttribute('data-p',p); row.appendChild(d); var b=document.createElement('button'); b.className='msg-del'; b.type='button'; b.setAttribute('aria-label','この質問と回答を消す'); b.innerHTML=window.ssIcon('trash',15); b.onclick=function(){ window.chatDel(p); }; row.appendChild(b); l.appendChild(row); } else { l.appendChild(d); } histPush('b',html,p); scrollDown(); }
+    function addBot(html,p){ var l=el('chat-log'); if(!l)return; var d=document.createElement('div'); d.className='msg bot'; d.innerHTML=html; if(p){ var row=document.createElement('div'); row.className='msg-row'; row.setAttribute('data-p',p); row.appendChild(d); var b=document.createElement('button'); b.className='msg-del'; b.type='button'; b.setAttribute('aria-label','この質問と回答を消す'); b.innerHTML=window.ssIcon('trash',15); b.onclick=function(){ window.chatDel(p); }; row.appendChild(b); l.appendChild(row); } else { l.appendChild(d); } histPush('b',html,p); if(restoring) scrollDown(); else scrollToQ(p); }
     var FILLER=['どうしたらよいですか','どうしたら良いですか','どうしたらいいですか','どうすればよいですか','どうしたらよい','どうしたら良い','どうしたらいい','どうすればいい','どうすれば','どうする','良いですか','よいですか','いいですか','教えてください','教えて下さい','教えてほしい','教えて欲しい','教えて','おしえて','ください','下さい','ほしい','欲しい','でしょうか','ですか','について','に関して','場合は','場合','ときは','時は','したい','ますか','のですが','のでしょう','たいです'];
     // ===== 表記ゆれ =====
     // nf: 全角半角をそろえる（ｽﾄｰﾏ→ストーマ）。k2h: カタカナ→ひらがな。yomi: 漢字→読み（毎日作り直す表 YOMI で、長い順に置き換え）
@@ -1512,7 +1515,8 @@
     function norm(s){ return cut(strip(nf(s))); }
     // ひらがなにそろえた形（カタカナ→ひらがな、漢字→読み）
     function hira(s){ return yomi(k2h(norm(s))); }
-    function grams(s){ s=norm(s); var g=[]; if(s.length<=1){ if(s) g.push(s); return g; } for(var i=0;i<s.length-1;i++) g.push(s.substr(i,2)); return g; }
+    // 字の重なりも、ひらがなにそろえた形で見る（漢字・ひらがな・カタカナの書き方の違いで外れないように）
+    function grams(s){ s=hira(s); var g=[]; if(s.length<=1){ if(s) g.push(s); return g; } for(var i=0;i<s.length-1;i++) g.push(s.substr(i,2)); return g; }
     var _DF=null, _N=0, _KDF={};
     function ensureIndex(){
       if(_DF) return; _DF={}; _N=KB.length; _KDF={};
@@ -1590,19 +1594,72 @@
     };
     window.chatOpenWorryList=function(wi){ try{ closePage('page-chat'); openPage('page-onayami'); if(typeof wi==='number' && typeof openWorry==='function') openWorry(wi); }catch(e){} return false; };
 
-    function reply(text,p){
-      if(isDanger(text)){ addBot('気になる症状は、ここでの自己判断は避けてください。<b>早めに医療機関・ストーマ外来にご相談ください。</b>',p); window.ssLog('danger', text, '気になる症状は、ここでの自己判断は避けてください。早めに医療機関・ストーマ外来にご相談ください。'); return; }
-      var e=findEntry(text);
+    // ===== AIで回答を選ぶ（今の探し方で決まらないときだけ） =====
+    // AIが返してよいのは「マスターのどのQ&Aを出すか」だけ。返ってきた質問文をアプリの中のQ&Aと照合し、画面に出すのはマスターの回答文だけ。AIの文章は出さない
+    var RECENT=[], RECENT_MS=5*60*1000;
+    function recentPrev(){ var now=Date.now(), a=[]; for(var i=0;i<RECENT.length;i++){ if(now-RECENT[i].at<=RECENT_MS) a.push(RECENT[i].t); } return a.slice(-2); }
+    function rememberQ(t){ RECENT.push({t:String(t).slice(0,200), at:Date.now()}); if(RECENT.length>5) RECENT.shift(); }
+    // 候補のボタンを並べる文（AIなしの候補とAIの候補で共通）
+    function choicesHtml(text,list){
+      var items='', qs=[];
+      for(var c=0;c<list.length;c++){ var ce=list[c]; qs.push(ce.q); items+='<a class="act" href="#" onclick="chatChip(\''+esc(ce.q).replace(/'/g,'&#39;')+'\');return false;">'+esc(ce.q)+'</a>'; }
+      items+='<a class="act" href="#" onclick="chatOpenWorryList();return false;">'+window.ssIcon('list-checks',14)+' お悩み一覧から探す</a>';
+      return { html:'「'+esc(text)+'」について、近い質問はこちらです。当てはまるものを押してください。<div class="actions">'+items+'</div>', qs:qs };
+    }
+    // 今までの動き（AIを呼ばないとき、AIが使えなかったとき）
+    function replyLocal(text,p,e){
       if(e && e.choices){
-        var items='', qs=[];
-        for(var c=0;c<e.choices.length;c++){ var ce=e.choices[c]; qs.push(ce.q); items+='<a class="act" href="#" onclick="chatChip(\''+esc(ce.q).replace(/'/g,'&#39;')+'\');return false;">'+esc(ce.q)+'</a>'; }
-        items+='<a class="act" href="#" onclick="chatOpenWorryList();return false;">'+window.ssIcon('list-checks',14)+' お悩み一覧から探す</a>';
-        addBot('「'+esc(text)+'」について、近い質問はこちらです。当てはまるものを押してください。<div class="actions">'+items+'</div>',p);
-        window.ssLog('clarify', text, '（候補）'+qs.join(' / '));
+        var ch0=choicesHtml(text,e.choices);
+        addBot(ch0.html,p);
+        window.ssLog('clarify', text, '（候補）'+ch0.qs.join(' / '));
         return;
       }
       if(e){ addBot(window.ssAnswerHtml(e),p); window.ssLog('hit', text, e.a); }
       else { var ch=clarifyHtml(text); addBot(ch,p); window.ssLog('miss', text, '（聞き返し）'+ch.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').slice(0,300)); }
+    }
+    function replyAI(text,p,e,prev,url){
+      var l=el('chat-log'), w=null, done=false, ctl=null, timer=null;
+      // 待っている間の吹き出し。会話の履歴（端末への保存）には入れない
+      if(l){ w=document.createElement('div'); w.className='msg bot'; w.textContent='探しています…'; l.appendChild(w); scrollDown(); }
+      function finish(qs){
+        if(done) return; done=true; if(timer) clearTimeout(timer);
+        if(w && w.parentNode) w.parentNode.removeChild(w);
+        // 待っている間にその質問が消されていたら、何も出さない
+        var lg=el('chat-log'); if(lg && !lg.querySelector('.msg.user[data-p="'+p+'"]')) return;
+        // AIが返した質問文と、完全に同じ質問文のQ&Aだけを拾う（拾えないものは捨てる）
+        var hits=[], seen={};
+        if(qs && qs.length){
+          for(var i=0;i<qs.length;i++){
+            var s=String(qs[i]); if(seen[s]) continue;
+            for(var k=0;k<KB.length;k++){ if(KB[k].q===s){ seen[s]=1; hits.push(KB[k]); break; } }
+          }
+        }
+        if(hits.length===1){ addBot(window.ssAnswerHtml(hits[0]),p); window.ssLog('hit', text, '（AI）'+hits[0].a); return; }
+        if(hits.length>=2){
+          var ch=choicesHtml(text,hits);
+          addBot(ch.html,p);
+          window.ssLog('clarify', text, '（AI候補）'+ch.qs.join(' / '));
+          return;
+        }
+        replyLocal(text,p,e);
+      }
+      try{
+        ctl=(typeof AbortController!=='undefined') ? new AbortController() : null;
+        timer=setTimeout(function(){ try{ if(ctl) ctl.abort(); }catch(x){} finish(null); }, 8000);
+        fetch(url, { method:'POST', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({q:String(text).slice(0,200), prev:prev}), redirect:'follow', signal:(ctl?ctl.signal:undefined) })
+          .then(function(r){ return r.json(); })
+          .then(function(j){ finish(j && j.ok===true && Array.isArray(j.qs) ? j.qs : null); })
+          .catch(function(){ finish(null); });
+      }catch(x){ finish(null); }
+    }
+    function reply(text,p){
+      if(isDanger(text)){ addBot('気になる症状は、ここでの自己判断は避けてください。<b>早めに医療機関・ストーマ外来にご相談ください。</b>',p); window.ssLog('danger', text, '気になる症状は、ここでの自己判断は避けてください。早めに医療機関・ストーマ外来にご相談ください。'); return; }
+      var e=findEntry(text), prev=recentPrev();
+      rememberQ(text);
+      var url=window.SS_AI_URL;
+      // 1つに決まったとき、またはAIの設定が空のときは、AIを呼ばない
+      if(!url || (e && !e.choices)){ replyLocal(text,p,e); return; }
+      replyAI(text,p,e,prev,url);
     }
     window.chatSend=function(){ var inp=el('chat-input'); if(!inp)return; var v=(inp.value||'').trim(); if(!v)return; inp.value=''; var p=String(Date.now()); addUser(v,p); setTimeout(function(){reply(v,p);},120); };
     window.chatChip=function(t){ var p=String(Date.now()); addUser(t,p); setTimeout(function(){reply(t,p);},120); };
@@ -2547,6 +2604,5 @@
   })();
 
 </script>
-<div style="position:fixed;left:0;bottom:0;z-index:2147483647;background:#c00;color:#fff;font-size:11px;padding:2px 6px;pointer-events:none">確認用（本番ではありません）</div>
-</body>
+<div style="position:fixed;left:0;bottom:0;z-index:2147483647;background:#c00;color:#fff;font-size:11px;padding:2px 6px;pointer-events:none">確認用（本番ではありません）</div></body>
 </html>
