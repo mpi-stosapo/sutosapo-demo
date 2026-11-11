@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
-<head>
-<meta name="robots" content="noindex,nofollow">
+<head><meta name="robots" content="noindex,nofollow">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ストサポ｜ストーマライフ トータルサポート</title>
@@ -1546,7 +1545,9 @@
         var dot=0; for(var j=0;j<uq.length;j++){ var g2=uq[j]; if(e._g[g2]){ var w2=idf(g2); dot+=w2*w2; } }
         var cos=dot/(qn*e._n);
         var kwc=0; for(var x=0;x<e._kw.length;x++){ var kw=e._kw[x]; if((_KDF[kw.k]||99)>8) continue; if(kw.kata ? ut.indexOf(kw.raw)>=0 : uh.indexOf(kw.k)>=0) kwc++; }
-        var sub=!!(e._qn && ut.length>=3 && (ut.indexOf(e._qn)>=0 || e._qn.indexOf(ut)>=0)) || !!(e._qh && uh.length>=3 && (uh.indexOf(e._qh)>=0 || e._qh.indexOf(uh)>=0));
+        // 登録の質問が入力の一部に含まれるときは、入力の大半（6割以上）を占める場合だけ「一致」とみなす
+        // （「どうすれば良い？」のような短い一般的な質問が、「テープ」など具体的な言葉を含む入力を横取りしないように）
+        var sub=!!(e._qn && ut.length>=3 && (e._qn.indexOf(ut)>=0 || (ut.indexOf(e._qn)>=0 && e._qn.length>=ut.length*0.6))) || !!(e._qh && uh.length>=3 && (e._qh.indexOf(uh)>=0 || (uh.indexOf(e._qh)>=0 && e._qh.length>=uh.length*0.6)));
         var sc=cos + 0.6*kwc + (sub?2:0);
         if(kwc) kwHits.push([sc,e]);
         if(sc>bestScore){ bestScore=sc; best=e; bestCos=cos; bestKw=kwc; bestSub=sub; }
@@ -2547,6 +2548,5 @@
   })();
 
 </script>
-<div style="position:fixed;left:0;bottom:0;z-index:2147483647;background:#c00;color:#fff;font-size:11px;padding:2px 6px;pointer-events:none">確認用（本番ではありません）</div>
-</body>
+<div style="position:fixed;left:0;bottom:0;z-index:2147483647;background:#c00;color:#fff;font-size:11px;padding:2px 6px;pointer-events:none">確認用（本番ではありません）</div></body>
 </html>
