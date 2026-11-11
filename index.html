@@ -1416,6 +1416,22 @@
     }catch(e){}
   };
 
+  // ===== 病院別QR: アドレスの h（英数字8文字以内）を、端末ごとに初回だけ「開いた」と数える。個人を特定する情報は送らない。URLが空なら何もしない =====
+  (function(){
+    try{
+      var u = window.SS_LOG_URL; if(!u) return;
+      var h = new URLSearchParams(location.search).get('h');
+      if(!h || !/^[A-Za-z0-9]{1,8}$/.test(h)) return;
+      if(window.navigator.standalone===true || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)) return;
+      var type = 'patient';
+      var key = 'ss_qr_' + type + '_' + h;
+      if(localStorage.getItem(key)) return;
+      fetch(u, { method:'POST', mode:'no-cors', keepalive:true, body:JSON.stringify({ action:'open', h:h, type:type }) })
+        .then(function(){ try{ localStorage.setItem(key, '1'); }catch(e){} })
+        .catch(function(){});
+    }catch(e){}
+  })();
+
   // ===== 共通アイコン（線画・Lucide系）: お悩み一覧／回答ボタン／用品ボタンで共用 =====
   window.SS_ICON = {
     "info":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M12 16v-4\"/><path d=\"M12 8h.01\"/>",
