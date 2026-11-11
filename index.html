@@ -86,9 +86,9 @@
   }
   .appbar{ justify-content:space-between; }
   /* ホーム画面アプリとして開いたときだけ、上の帯を下げる */
-  @media (display-mode: standalone){ .appbar{ padding-top:24px; } .notice-pop{ top:77px; } }
-  .ss-standalone .appbar{ padding-top:24px; }
-  .ss-standalone .notice-pop{ top:77px; }
+  @media (display-mode: standalone){ .appbar{ padding-top:30px; } .notice-pop{ top:83px; } }
+  .ss-standalone .appbar{ padding-top:30px; }
+  .ss-standalone .notice-pop{ top:83px; }
   /* 画面全体が再び開いたときに上へずれないよう、ページ自体を動かなくする（ホーム画面アプリのスマホ幅のみ） */
   @media (max-width:430px){ .ss-standalone, .ss-standalone body{ height:100dvh; min-height:0; overflow:hidden; overscroll-behavior:none; } }
   .abtn{ flex:none; width:36px; height:36px; border-radius:50%; border:0; background:none; color:#6d8a96; display:grid; place-items:center; cursor:pointer; padding:0; }
