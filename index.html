@@ -1480,6 +1480,8 @@
 
     // ===== チャット =====
     function scrollDown(){ var l=el('chat-log'); if(l) l.scrollTop=l.scrollHeight; }
+    // 答えを出したら、その質問が上に来る位置まで送る（答えの最後に飛ぶと、質問と答えの頭が見えず、何も出なかったように見えるため）
+    function scrollToQ(p){ var l=el('chat-log'); if(!l) return; var u=p ? l.querySelector('.msg.user[data-p="'+p+'"]') : null; if(!u){ scrollDown(); return; } var top=l.scrollTop + (u.getBoundingClientRect().top - l.getBoundingClientRect().top) - 8; l.scrollTop=Math.max(0, top); }
     // 履歴はこのスマホの中（localStorage）だけに保存。直近50件。サーバーには送らない
     var HIST_KEY='ss_chat_v1', HIST_MAX=50, restoring=false;
     function histLoad(){ try{ var a=JSON.parse(localStorage.getItem(HIST_KEY)||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
@@ -1487,7 +1489,7 @@
     // 回答の右横のゴミ箱: その質問と回答の1組を画面と保存から消す
     window.chatDel=function(p){ if(!p) return; try{ var a=histLoad().filter(function(m){ return m.p!==p; }); localStorage.setItem(HIST_KEY, JSON.stringify(a)); }catch(e){} var l=el('chat-log'); if(!l) return; var els=l.querySelectorAll('[data-p="'+p+'"]'); for(var i=0;i<els.length;i++){ els[i].parentNode.removeChild(els[i]); } };
     function addUser(t,p){ var l=el('chat-log'); if(!l)return; var d=document.createElement('div'); d.className='msg user'; d.textContent=t; if(p) d.setAttribute('data-p',p); l.appendChild(d); histPush('u',t,p); scrollDown(); }
-    function addBot(html,p){ var l=el('chat-log'); if(!l)return; var d=document.createElement('div'); d.className='msg bot'; d.innerHTML=html; if(p){ var row=document.createElement('div'); row.className='msg-row'; row.setAttribute('data-p',p); row.appendChild(d); var b=document.createElement('button'); b.className='msg-del'; b.type='button'; b.setAttribute('aria-label','この質問と回答を消す'); b.innerHTML=window.ssIcon('trash',15); b.onclick=function(){ window.chatDel(p); }; row.appendChild(b); l.appendChild(row); } else { l.appendChild(d); } histPush('b',html,p); scrollDown(); }
+    function addBot(html,p){ var l=el('chat-log'); if(!l)return; var d=document.createElement('div'); d.className='msg bot'; d.innerHTML=html; if(p){ var row=document.createElement('div'); row.className='msg-row'; row.setAttribute('data-p',p); row.appendChild(d); var b=document.createElement('button'); b.className='msg-del'; b.type='button'; b.setAttribute('aria-label','この質問と回答を消す'); b.innerHTML=window.ssIcon('trash',15); b.onclick=function(){ window.chatDel(p); }; row.appendChild(b); l.appendChild(row); } else { l.appendChild(d); } histPush('b',html,p); if(restoring) scrollDown(); else scrollToQ(p); }
     var FILLER=['どうしたらよいですか','どうしたら良いですか','どうしたらいいですか','どうすればよいですか','どうしたらよい','どうしたら良い','どうしたらいい','どうすればいい','どうすれば','どうする','良いですか','よいですか','いいですか','教えてください','教えて下さい','教えてほしい','教えて欲しい','教えて','おしえて','ください','下さい','ほしい','欲しい','でしょうか','ですか','について','に関して','場合は','場合','ときは','時は','したい','ますか','のですが','のでしょう','たいです'];
     // ===== 表記ゆれ =====
     // nf: 全角半角をそろえる（ｽﾄｰﾏ→ストーマ）。k2h: カタカナ→ひらがな。yomi: 漢字→読み（毎日作り直す表 YOMI で、長い順に置き換え）
@@ -1511,7 +1513,8 @@
     function norm(s){ return cut(strip(nf(s))); }
     // ひらがなにそろえた形（カタカナ→ひらがな、漢字→読み）
     function hira(s){ return yomi(k2h(norm(s))); }
-    function grams(s){ s=norm(s); var g=[]; if(s.length<=1){ if(s) g.push(s); return g; } for(var i=0;i<s.length-1;i++) g.push(s.substr(i,2)); return g; }
+    // 字の重なりも、ひらがなにそろえた形で見る（漢字・ひらがな・カタカナの書き方の違いで外れないように）
+    function grams(s){ s=hira(s); var g=[]; if(s.length<=1){ if(s) g.push(s); return g; } for(var i=0;i<s.length-1;i++) g.push(s.substr(i,2)); return g; }
     var _DF=null, _N=0, _KDF={};
     function ensureIndex(){
       if(_DF) return; _DF={}; _N=KB.length; _KDF={};
