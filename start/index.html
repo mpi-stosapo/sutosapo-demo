@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#1aabce">
+<title>ストサポ｜ストーマライフ トータルサポート</title>
+<link rel="icon" type="image/png" href="/assets/logo/app-icon-180.png">
+<style>
+  html { -webkit-text-size-adjust:100%; }
+  body { margin:0; min-height:100vh; min-height:100dvh; display:flex; align-items:center; justify-content:center; text-align:center; background:#f2fafc; color:#2b5163; font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic",sans-serif; line-height:1.8; }
+  img { width:64px; height:64px; border-radius:16px; display:block; margin:0 auto 14px; }
+  p { margin:0; font-size:15px; }
+  a { color:#16a6cc; font-size:13px; }
+</style>
+</head>
+<body>
+  <div>
+    <img src="/assets/logo/app-icon-180.png" alt="ストサポ">
+    <p>ストサポを開いています…</p>
+    <p><a id="go" href="/">開かないときは、こちらを押してください</a></p>
+  </div>
+<script>
+  // 患者さん用QRの入り口。いまは、すぐにアプリへ移す。
+  // 将来、初めての方にだけ紹介を見せるときは、ここで「見せるか、移すか」を分ける。
+  (function(){
+    var APP = '/';
+    var go = APP;
+    try{
+      var h = new URLSearchParams(location.search).get('h');
+      var standalone = window.navigator.standalone === true || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+      // 病院の番号は、ブラウザで開いたときだけ引き継ぐ（ホーム画面から開いた分は、数えないため）
+      if(h && /^[A-Za-z0-9]{1,8}$/.test(h) && !standalone) go = APP + '?h=' + h;
+    }catch(e){}
+    try{ document.getElementById('go').href = go; }catch(e){}
+    location.replace(go);
+  })();
+</script>
+</body>
+</html>
