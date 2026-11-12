@@ -73,5 +73,12 @@
     }catch(e){}
   })();
 </script>
+<script>
+  // 看護師向けページから「ストサポを開く」を押した人には、患者様向けの導入を見せない
+  (function(){ try{
+    var b=document.querySelector('a.btn');
+    if(b) b.addEventListener('click',function(){ try{ localStorage.setItem('ss_intro_seen','1'); }catch(e){} });
+  }catch(e){} })();
+</script>
 </body>
 </html>
