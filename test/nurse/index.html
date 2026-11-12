@@ -35,7 +35,7 @@
     /* 向きを変えたあとの画面の高さを、実際の高さに合わせる(script で --vh を更新) */
     html.has-vh .video { height:calc(var(--vh) * 100); }
     /* ノッチ・角の丸み・ホームバーに、再生ボタンなどが隠れないようにする */
-    .video iframe { inset:auto; top:env(safe-area-inset-top,0px); right:env(safe-area-inset-right,0px); bottom:env(safe-area-inset-bottom,0px); left:env(safe-area-inset-left,0px); width:auto; height:auto; }
+    .video iframe { inset:auto; top:env(safe-area-inset-top,0px); left:env(safe-area-inset-left,0px); width:calc(100% - env(safe-area-inset-left,0px) - env(safe-area-inset-right,0px)); height:calc(100% - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)); }
   }
 </style>
 </head>
