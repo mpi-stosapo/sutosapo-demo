@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+<title>ストーマライフ サポートブック｜電子書籍</title>
+<style>
+:root{
+  --teal:#2fb6c9;
+  --teal-dark:#1a8fa0;
+  --bg:#eef6f8;
+  --panel:#ffffff;
+  --ink:#2b3a42;
+  --sub:#6b8088;
+  --accent:#ff8a5c;
+}
+*{box-sizing:border-box;}
+html,body{
+  margin:0;padding:0;height:100%;
+  background:var(--bg);
+  font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,-apple-system,BlinkMacSystemFont,sans-serif;
+  color:var(--ink);
+  overflow:hidden;
+  overscroll-behavior:none;
+  -webkit-tap-highlight-color:transparent;
+  -webkit-text-size-adjust:100%;
+}
+#app{
+  display:flex;flex-direction:column;height:100%;width:100%;
+  height:100dvh;
+}
+
+/* ---------- top bar ---------- */
+#topbar{
+  flex:0 0 auto;
+  display:flex;align-items:center;gap:8px;
+  padding:calc(10px + env(safe-area-inset-top)) max(12px, env(safe-area-inset-left)) 10px max(12px, env(safe-area-inset-right));
+  background:linear-gradient(135deg,var(--teal),var(--teal-dark));
+  color:#fff;
+  box-shadow:0 2px 8px rgba(0,0,0,.15);
+  z-index:30;
+}
+#topbar .icon-btn{
+  background:rgba(255,255,255,.18);
+  border:none;color:#fff;
+  width:42px;height:42px;border-radius:11px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;flex:0 0 auto;
+  transition:background .15s;
+  -webkit-tap-highlight-color:transparent;
+}
+#topbar .icon-btn:hover{background:rgba(255,255,255,.32);}
+#topbar .icon-btn svg{width:22px;height:22px;fill:#fff;}
+#topbar .icon-btn.labeled{
+  width:auto;min-width:42px;padding:0 11px;gap:6px;
+}
+#topbar .icon-btn.labeled span{
+  font-size:clamp(11px,3vw,13px);font-weight:700;letter-spacing:.02em;white-space:nowrap;
+}
+#booktitle{
+  flex:1 1 auto;min-width:0;
+  font-size:clamp(13px,3.6vw,16px);font-weight:700;letter-spacing:.02em;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+#booktitle small{display:block;font-weight:400;font-size:clamp(9px,2.6vw,11px);opacity:.85;letter-spacing:.03em;}
+#pageIndicator{
+  flex:0 0 auto;
+  background:rgba(255,255,255,.18);
+  padding:7px 12px;border-radius:20px;
+  font-size:clamp(12px,3.2vw,14px);font-weight:600;
+  white-space:nowrap;
+}
+#pageIndicator .printed{display:block;opacity:.8;font-weight:400;margin-left:0;font-size:10px;text-align:center;}
+@media (min-width:480px){
+  #pageIndicator .printed{display:inline;margin-left:6px;font-size:11px;}
+}
+
+/* ---------- viewer ---------- */
+#viewer{
+  flex:1 1 auto;position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  background:#dfeaee;
+  touch-action:pan-y pinch-zoom;
+  user-select:none;
+  min-height:0;
+}
+#track{
+  position:absolute;top:0;left:0;height:100%;
+  display:flex;
+  will-change:transform;
+}
+.page-slide{
+  flex:0 0 100vw;
+  height:100%;
+  display:flex;align-items:center;justify-content:center;
+  padding:2px;
+}
+@media (min-width:480px){
+  .page-slide{padding:6px;}
+}
+.page-slide img{
+  max-width:100%;max-height:100%;
+  box-shadow:0 8px 30px rgba(0,0,0,.25);
+  border-radius:4px;
+  background:#fff;
+  pointer-events:none;
+  user-select:none;
+}
+
+.nav-arrow{
+  position:absolute;top:50%;transform:translateY(-50%);
+  width:44px;height:44px;border-radius:50%;
+  background:rgba(255,255,255,.85);
+  border:none;box-shadow:0 2px 10px rgba(0,0,0,.2);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;z-index:20;
+  transition:background .15s, opacity .2s;
+}
+.nav-arrow:hover{background:#fff;}
+.nav-arrow svg{width:22px;height:22px;fill:var(--teal-dark);}
+.nav-arrow.disabled{opacity:0;pointer-events:none;}
+#prevBtn{left:12px;}
+#nextBtn{right:12px;}
+@media (max-width:640px){
+  .nav-arrow{width:36px;height:36px;}
+  .nav-arrow svg{width:18px;height:18px;}
+}
+
+/* ---------- slicer (filmstrip) ---------- */
+#slicerWrap{
+  flex:0 0 auto;
+  background:var(--panel);
+  border-top:1px solid #dbe7ea;
+  padding:4px 0 calc(6px + env(safe-area-inset-bottom)) 0;
+}
+#slicerTrack{
+  display:none;
+  gap:8px;
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+  padding:4px max(14px, env(safe-area-inset-left)) 8px max(14px, env(safe-area-inset-right));
+  scroll-behavior:smooth;
+}
+#slicerTrack::-webkit-scrollbar{height:6px;}
+#slicerTrack::-webkit-scrollbar-thumb{background:#c6d8dc;border-radius:3px;}
+.thumb{
+  flex:0 0 auto;
+  width:60px;
+  cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  opacity:.65;
+  transition:opacity .15s, transform .15s;
+}
+.thumb:hover{opacity:1;}
+.thumb.active{opacity:1;transform:translateY(-3px);}
+.thumb img{
+  width:60px;height:auto;
+  border-radius:3px;
+  border:2px solid transparent;
+  box-shadow:0 1px 4px rgba(0,0,0,.2);
+  display:block;
+}
+.thumb.active img{border-color:var(--accent);}
+.thumb .tnum{font-size:10px;color:var(--sub);}
+
+/* slicer range slider */
+#sliceRangeWrap{
+  padding:2px 14px 4px 14px;
+  display:flex;align-items:center;gap:8px;
+}
+#sliceRange{
+  flex:1 1 auto;
+  -webkit-appearance:none;appearance:none;
+  height:4px;border-radius:2px;
+  background:#dbe7ea;
+  outline:none;
+}
+#sliceRange::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;
+  width:16px;height:16px;border-radius:50%;
+  background:var(--teal);cursor:pointer;
+  box-shadow:0 1px 4px rgba(0,0,0,.3);
+}
+#sliceRange::-moz-range-thumb{
+  width:16px;height:16px;border-radius:50%;
+  background:var(--teal);cursor:pointer;border:none;
+}
+#sliceLabel{font-size:clamp(11px,3vw,13px);color:var(--sub);flex:0 0 auto;min-width:64px;text-align:right;}
+
+/* ---------- TOC panel ---------- */
+#tocOverlay{
+  position:fixed;inset:0;background:rgba(20,35,40,.45);
+  z-index:40;display:none;
+}
+#tocOverlay.open{display:block;}
+#tocPanel{
+  position:fixed;top:0;left:0;bottom:0;width:min(340px,86vw);
+  background:var(--panel);
+  z-index:41;
+  transform:translateX(-100%);
+  transition:transform .25s ease;
+  display:flex;flex-direction:column;
+  box-shadow:4px 0 20px rgba(0,0,0,.2);
+}
+#tocOverlay.open #tocPanel{transform:translateX(0);}
+#tocHeader{
+  padding:16px 16px 12px 16px;
+  background:linear-gradient(135deg,var(--teal),var(--teal-dark));
+  color:#fff;flex:0 0 auto;
+  display:flex;align-items:center;justify-content:space-between;
+}
+#tocHeader h2{margin:0;font-size:16px;}
+#tocHeader button{
+  background:rgba(255,255,255,.2);border:none;color:#fff;
+  width:30px;height:30px;border-radius:8px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+}
+#tocHeader button svg{width:16px;height:16px;fill:#fff;}
+#tocList{flex:1 1 auto;overflow-y:auto;padding:6px 0;}
+.toc-item{
+  padding:13px 16px;
+  cursor:pointer;
+  font-size:clamp(14px,3.6vw,15px);
+  line-height:1.4;
+  border-bottom:1px solid #f0f4f5;
+  display:flex;justify-content:space-between;align-items:center;
+  gap:8px;
+}
+.toc-item.main{font-weight:700;background:#f5fafb;color:var(--teal-dark);}
+.toc-item.sub{padding-left:28px;color:var(--ink);font-size:clamp(13px,3.4vw,14px);}
+.toc-item:hover{background:#e9f6f8;}
+.toc-item .pnum{
+  flex:0 0 auto;font-size:11px;color:var(--sub);
+  background:#eef6f8;padding:2px 7px;border-radius:10px;
+}
+.toc-item.active{background:#dcf1f4;}
+
+/* swipe helper hint */
+#swipeHint{
+  position:absolute;bottom:10px;left:50%;transform:translateX(-50%);
+  background:rgba(0,0,0,.55);color:#fff;font-size:12px;
+  padding:6px 14px;border-radius:20px;
+  pointer-events:none;opacity:0;transition:opacity .4s;
+  z-index:15;
+}
+#swipeHint.show{opacity:1;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div id="topbar">
+    <button class="icon-btn labeled" id="tocBtn" title="もくじ（目次）を開く" aria-label="もくじ（目次）を開く">
+      <svg viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+      <span>もくじ</span>
+    </button>
+    <div id="booktitle">ストーマライフ サポートブック
+      <small>Stoma Life Support Book</small>
+    </div>
+    <div id="pageIndicator"><span id="curPage">1</span> / <span id="totalPage">48</span><span class="printed" id="printedLabel"></span></div>
+  </div>
+
+  <div id="viewer">
+    <div id="track"></div>
+    <button class="nav-arrow" id="prevBtn" title="前のページ">
+      <svg viewBox="0 0 24 24"><path d="M15.4 7.4L14 6l-6 6 6 6 1.4-1.4L10.8 12z"/></svg>
+    </button>
+    <button class="nav-arrow" id="nextBtn" title="次のページ">
+      <svg viewBox="0 0 24 24"><path d="M8.6 7.4L10 6l6 6-6 6-1.4-1.4L13.2 12z"/></svg>
+    </button>
+    <div id="swipeHint">スワイプでページ送り・ピンチで拡大できます</div>
+  </div>
+
+  <div id="slicerWrap">
+    <div id="sliceRangeWrap">
+      <span id="sliceLabel">ページ送り</span>
+      <input type="range" id="sliceRange" min="1" max="48" value="1" step="1">
+    </div>
+    <div id="slicerTrack"></div>
+  </div>
+
+</div>
+
+<div id="tocOverlay">
+  <div id="tocPanel">
+    <div id="tocHeader">
+      <h2>もくじ</h2>
+      <button id="tocCloseBtn">
+        <svg viewBox="0 0 24 24"><path d="M18.3 5.71L12 12.01l-6.3-6.3-1.41 1.41 6.3 6.3-6.3 6.29 1.41 1.41 6.3-6.29 6.3 6.29 1.41-1.41-6.3-6.29 6.3-6.3z"/></svg>
+      </button>
+    </div>
+    <div id="tocList"></div>
+  </div>
+</div>
+
+<script>
+const PAGES = [{"full":"/assets/book/p01.jpg"},{"full":"/assets/book/p02.jpg"},{"full":"/assets/book/p03.jpg"},{"full":"/assets/book/p04.jpg"},{"full":"/assets/book/p05.jpg"},{"full":"/assets/book/p06.jpg"},{"full":"/assets/book/p07.jpg"},{"full":"/assets/book/p08.jpg"},{"full":"/assets/book/p09.jpg"},{"full":"/assets/book/p10.jpg"},{"full":"/assets/book/p11.jpg"},{"full":"/assets/book/p12.jpg"},{"full":"/assets/book/p13.jpg"},{"full":"/assets/book/p14.jpg"},{"full":"/assets/book/p15.jpg"},{"full":"/assets/book/p16.jpg"},{"full":"/assets/book/p17.jpg"},{"full":"/assets/book/p18.jpg"},{"full":"/assets/book/p19.jpg"},{"full":"/assets/book/p20.jpg"},{"full":"/assets/book/p21.jpg"},{"full":"/assets/book/p22.jpg"},{"full":"/assets/book/p23.jpg"},{"full":"/assets/book/p24.jpg"},{"full":"/assets/book/p25.jpg"},{"full":"/assets/book/p26.jpg"},{"full":"/assets/book/p27.jpg"},{"full":"/assets/book/p28.jpg"},{"full":"/assets/book/p29.jpg"},{"full":"/assets/book/p30.jpg"},{"full":"/assets/book/p31.jpg"},{"full":"/assets/book/p32.jpg"},{"full":"/assets/book/p33.jpg"},{"full":"/assets/book/p34.jpg"},{"full":"/assets/book/p35.jpg"},{"full":"/assets/book/p36.jpg"},{"full":"/assets/book/p37.jpg"},{"full":"/assets/book/p38.jpg"},{"full":"/assets/book/p39.jpg"},{"full":"/assets/book/p40.jpg"},{"full":"/assets/book/p41.jpg"},{"full":"/assets/book/p42.jpg"},{"full":"/assets/book/p43.jpg"},{"full":"/assets/book/p44.jpg"},{"full":"/assets/book/p45.jpg"},{"full":"/assets/book/p46.jpg"},{"full":"/assets/book/p47.jpg"},{"full":"/assets/book/p48.jpg"}];
+const TOC = [{"title": "表紙", "idx": 1, "children": []}, {"title": "はじめに", "idx": 2, "children": []}, {"title": "目次", "idx": 3, "children": []}, {"title": "1．ストーマって何だろう？", "idx": 4, "children": []}, {"title": "2．あなたのストーマの種類は？", "idx": 4, "children": []}, {"title": "3．ストーマは、どうやってケアするの？", "idx": 6, "children": [{"title": "排泄物の処理方法（消化管ストーマ）", "idx": 6}, {"title": "排泄物の処理方法（尿路ストーマ）", "idx": 12}, {"title": "知っておこう！ストーマ装具の箱の中", "idx": 16}, {"title": "やってみよう！装具交換とスキンケア", "idx": 18}]}, {"title": "4．ストーマ用品のこと、もっと教えて！", "idx": 20, "children": [{"title": "ストーマ装具", "idx": 20}, {"title": "皮膚保護剤", "idx": 21}, {"title": "ストーマケア補助用品", "idx": 22}]}, {"title": "5．知りたい！聞きたい！ 日常生活のアドバイスと災害への備え", "idx": 28, "children": [{"title": "運動・仕事", "idx": 28}, {"title": "入浴", "idx": 29}, {"title": "外出・旅行", "idx": 30}, {"title": "食事", "idx": 31}, {"title": "ごみ処理／服装", "idx": 32}, {"title": "睡眠／性生活／妊娠・出産", "idx": 33}, {"title": "ストーマ用品購入と管理のポイント", "idx": 36}, {"title": "災害への備えと災害時の対応", "idx": 38}]}, {"title": "6．社会福祉制度について教えて！", "idx": 40, "children": []}, {"title": "7．「ストーマ外来」と「皮膚・排泄ケア認定看護師」について", "idx": 44, "children": []}, {"title": "8．患者会などのサポートグループについて", "idx": 45, "children": []}, {"title": "9．メーカー・団体からの情報提供", "idx": 45, "children": []}];
+const N = PAGES.length;
+
+let current = 1; // 1-indexed
+
+const track = document.getElementById('track');
+const viewer = document.getElementById('viewer');
+const curPageEl = document.getElementById('curPage');
+const totalPageEl = document.getElementById('totalPage');
+const printedLabelEl = document.getElementById('printedLabel');
+const slicerTrack = document.getElementById('slicerTrack');
+const sliceRange = document.getElementById('sliceRange');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const tocBtn = document.getElementById('tocBtn');
+const tocCloseBtn = document.getElementById('tocCloseBtn');
+const tocOverlay = document.getElementById('tocOverlay');
+const tocList = document.getElementById('tocList');
+const swipeHint = document.getElementById('swipeHint');
+
+totalPageEl.textContent = N;
+sliceRange.max = N;
+
+// build slides
+PAGES.forEach((p, i) => {
+  const slide = document.createElement('div');
+  slide.className = 'page-slide';
+  slide.dataset.idx = i + 1;
+  const img = document.createElement('img');
+  img.loading = (i < 3) ? 'eager' : 'lazy';
+  img.src = p.full;
+  img.alt = 'page ' + (i + 1);
+  slide.appendChild(img);
+  track.appendChild(slide);
+});
+
+// ページ送りのサムネイル帯は表示しない（本文ページを大きく見せるため）
+// ページ移動は上部の「もくじ」とスライダー、スワイプ、左右の矢印で行う
+
+// build TOC
+function renderTocItem(item, isMain) {
+  const el = document.createElement('div');
+  el.className = 'toc-item ' + (isMain ? 'main' : 'sub');
+  el.dataset.idx = item.idx;
+  const label = document.createElement('span');
+  label.textContent = item.title;
+  const pnum = document.createElement('span');
+  pnum.className = 'pnum';
+  const lbl = PAGES[item.idx - 1].label;
+  const isNum = lbl && /^[0-9]+$/.test(lbl);
+  pnum.textContent = isNum ? ('P.' + lbl) : (lbl || '');
+  el.appendChild(label);
+  el.appendChild(pnum);
+  el.addEventListener('click', () => {
+    goTo(item.idx);
+    closeToc();
+  });
+  tocList.appendChild(el);
+}
+TOC.forEach(item => {
+  renderTocItem(item, true);
+  (item.children || []).forEach(c => renderTocItem(c, false));
+});
+
+function updateTrackPosition(animate) {
+  track.style.transition = animate ? 'transform .32s cubic-bezier(.22,.61,.36,1)' : 'none';
+  track.style.transform = 'translateX(' + (-(current - 1) * viewer.clientWidth) + 'px)';
+}
+
+function updateUI() {
+  curPageEl.textContent = current;
+  const lbl = PAGES[current - 1].label;
+  const isNum = lbl && /^[0-9]+$/.test(lbl);
+  printedLabelEl.textContent = isNum ? ('（本文 P.' + lbl + '）') : (lbl ? ('（' + lbl + '）') : '');
+  sliceRange.value = current;
+
+  prevBtn.classList.toggle('disabled', current === 1);
+  nextBtn.classList.toggle('disabled', current === N);
+
+  // slicer active state + autoscroll
+  document.querySelectorAll('.thumb').forEach(t => {
+    t.classList.toggle('active', Number(t.dataset.idx) === current);
+  });
+  const activeThumb = slicerTrack.querySelector('.thumb.active');
+  if (activeThumb) {
+    activeThumb.scrollIntoView({behavior:'smooth', inline:'center', block:'nearest'});
+  }
+
+  // toc active state
+  document.querySelectorAll('.toc-item').forEach(t => {
+    t.classList.toggle('active', Number(t.dataset.idx) === current);
+  });
+}
+
+// 画像は別ファイル。見るページの前後は先に読み込み、最初の表示が済んだら残りを順に裏で読み込む
+function warmPages(idx) {
+  for (let k = idx - 1; k <= idx + 2; k++) {
+    const sl = track.children[k - 1];
+    const im = sl && sl.firstChild;
+    if (im && im.loading === 'lazy') im.loading = 'eager';
+  }
+}
+window.addEventListener('load', () => {
+  let k = 0;
+  const t = setInterval(() => {
+    if (k >= N) { clearInterval(t); return; }
+    const im = track.children[k] && track.children[k].firstChild;
+    if (im && im.loading === 'lazy') im.loading = 'eager';
+    k++;
+  }, 350);
+});
+
+function goTo(idx, animate) {
+  if (idx < 1) idx = 1;
+  if (idx > N) idx = N;
+  current = idx;
+  warmPages(idx);
+  updateTrackPosition(animate !== false);
+  updateUI();
+}
+
+prevBtn.addEventListener('click', () => goTo(current - 1));
+nextBtn.addEventListener('click', () => goTo(current + 1));
+
+sliceRange.addEventListener('input', (e) => {
+  goTo(Number(e.target.value), false);
+});
+
+document.addEventListener('keydown', (e) => {
+  if (tocOverlay.classList.contains('open')) return;
+  if (e.key === 'ArrowRight') goTo(current + 1);
+  if (e.key === 'ArrowLeft') goTo(current - 1);
+  if (e.key === 'Home') goTo(1);
+  if (e.key === 'End') goTo(N);
+});
+
+window.addEventListener('resize', () => updateTrackPosition(false));
+
+// TOC open/close
+function openToc(){ tocOverlay.classList.add('open'); }
+function closeToc(){ tocOverlay.classList.remove('open'); }
+tocBtn.addEventListener('click', openToc);
+tocCloseBtn.addEventListener('click', closeToc);
+tocOverlay.addEventListener('click', (e) => { if (e.target === tocOverlay) closeToc(); });
+
+// swipe / drag support (single-finger only; a second touch means the user
+// is pinch-zooming, so we back off and let the browser handle that natively)
+let dragging = false, startX = 0, deltaX = 0, startTime = 0, activePointerId = null;
+const activePointers = new Set();
+
+function onDown(x){
+  dragging = true; startX = x; deltaX = 0; startTime = Date.now();
+  track.style.transition = 'none';
+}
+function onMove(x){
+  if (!dragging) return;
+  deltaX = x - startX;
+  const base = -(current - 1) * viewer.clientWidth;
+  track.style.transform = 'translateX(' + (base + deltaX) + 'px)';
+}
+function onUp(){
+  if (!dragging) return;
+  dragging = false;
+  activePointerId = null;
+  const w = viewer.clientWidth;
+  const elapsed = Date.now() - startTime;
+  const velocity = Math.abs(deltaX) / Math.max(elapsed,1);
+  const threshold = w * 0.18;
+  if (deltaX <= -threshold || (deltaX < -30 && velocity > 0.5)) {
+    goTo(current + 1);
+  } else if (deltaX >= threshold || (deltaX > 30 && velocity > 0.5)) {
+    goTo(current - 1);
+  } else {
+    updateTrackPosition(true);
+  }
+}
+function cancelDragForPinch(){
+  // a second finger touched down: abandon our drag/swipe tracking so the
+  // browser's native pinch-to-zoom can take over cleanly.
+  dragging = false;
+  activePointerId = null;
+  updateTrackPosition(false);
+}
+viewer.addEventListener('pointerdown', (e) => {
+  if (e.target.closest('.nav-arrow')) return;
+  activePointers.add(e.pointerId);
+  if (activePointers.size > 1) { cancelDragForPinch(); return; }
+  activePointerId = e.pointerId;
+  onDown(e.clientX);
+});
+viewer.addEventListener('pointermove', (e) => {
+  if (activePointers.size > 1) return;
+  if (e.pointerId !== activePointerId) return;
+  onMove(e.clientX);
+});
+viewer.addEventListener('pointerup', (e) => {
+  activePointers.delete(e.pointerId);
+  if (e.pointerId === activePointerId) onUp();
+});
+viewer.addEventListener('pointerleave', (e) => {
+  activePointers.delete(e.pointerId);
+  if (e.pointerId === activePointerId) onUp();
+});
+viewer.addEventListener('pointercancel', (e) => {
+  activePointers.delete(e.pointerId);
+  if (e.pointerId === activePointerId) onUp();
+});
+
+// init
+updateTrackPosition(false);
+updateUI();
+
+// swipe hint (first visit only, in-memory)
+setTimeout(() => {
+  swipeHint.classList.add('show');
+  setTimeout(() => swipeHint.classList.remove('show'), 2800);
+}, 700);
+</script>
+</body>
+</html>
