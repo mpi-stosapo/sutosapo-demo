@@ -945,7 +945,7 @@
     <div class="foot-links">
       <a href="#" onclick="openPage('page-privacy');return false;">プライバシーポリシー</a>
       <span>・</span>
-      <a href="#" onclick="openPage('page-about');return false;">ストサポについて</a>
+      <a href="#" onclick="openPage('page-start');return false;">ストサポについて</a>
       <span>・</span>
       <a href="https://mpi-store.com/" target="_blank" rel="noopener">オンラインストア</a>
     </div>
@@ -1793,19 +1793,19 @@
       <h2>設定</h2>
     </div>
     <div class="set-list">
-      <button class="set-item" onclick="pushInfo();return false;">
-        <span class="si" style="background:#e4f3fb;color:#0d8ab0;"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/></svg></span>
-        <span class="st">プッシュ通知<span>新しいお知らせを受け取る</span></span>
-        <span class="sg"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>
-      </button>
-      <button class="set-item" onclick="closePage('page-settings');openPage('page-about');return false;">
-        <span class="si" style="background:#e4f3fb;color:#0d8ab0;"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></span>
-        <span class="st">ストサポについて<span>このアプリが目指していること</span></span>
+      <button class="set-item" onclick="closePage('page-settings');openPage('page-start');return false;">
+        <span class="si" style="background:#fdeede;color:#e2924e;"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg></span>
+        <span class="st">初めての方へ<span>ストサポ紹介ムービー</span></span>
         <span class="sg"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>
       </button>
       <button class="set-item" onclick="closePage('page-settings');openPage('page-howto');return false;">
         <span class="si" style="background:#e6f4e9;color:#3a9d63;"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></span>
         <span class="st">使い方<span>画面の見かたとご利用上の注意</span></span>
+        <span class="sg"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>
+      </button>
+      <button class="set-item" onclick="pushInfo();return false;">
+        <span class="si" style="background:#e4f3fb;color:#0d8ab0;"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/></svg></span>
+        <span class="st">プッシュ通知<span>新しいお知らせを受け取る</span></span>
         <span class="sg"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>
       </button>
       <button class="set-item" onclick="closePage('page-settings');openPage('page-privacy');return false;">
@@ -1817,9 +1817,9 @@
     <p class="set-note">医療的な判断が必要なときは、必ず医療機関にご相談ください。</p>
   </div>
 
-  <!-- ===== サブページ: ストサポについて ===== -->
+  <!-- ===== サブページ: 初めての方へ（紹介ムービー＋ストサポについて） ===== -->
   <style>
-  #page-about{ background:var(--base); }
+  #page-start{ background:var(--base); }
   .doc{ margin:6px 18px 28px; font-size:13.5px; line-height:2.0; color:#3e5a66; }
   .doc .lead2{ font-family:var(--font-display); font-size:16px; font-weight:800; color:var(--teal-deep); line-height:1.7; margin:4px 0 14px; }
   .doc h3{ font-family:var(--font-display); font-size:14.5px; color:var(--blue-ink); margin:24px 0 8px; padding-left:11px; border-left:4px solid var(--teal); }
@@ -1828,15 +1828,26 @@
   .doc li{ margin-bottom:7px; }
   .doc .closing{ margin-top:22px; padding:16px 18px; background:#fff; border:1px solid var(--line); border-radius:var(--r-md); font-family:var(--font-display); font-weight:800; font-size:15px; color:var(--teal-deep); text-align:center; line-height:1.8; box-shadow:var(--shadow-sm); }
   .doc .warn-box{ margin:14px 0; padding:13px 15px; background:#fdeede; border:1px solid #f3dfc6; border-radius:12px; color:#9a5a12; font-size:12.5px; line-height:1.85; }
+  /* 初めての方へ：紹介ムービー */
+  .start-video{ position:relative; aspect-ratio:4/5; max-width:440px; margin:6px auto 0; background:#0d2f3d; border-radius:14px; overflow:hidden; box-shadow:0 8px 24px rgba(20,90,120,.18); }
+  .start-video iframe{ position:absolute; inset:0; width:100%; height:100%; border:0; }
+  .doc .start-lead{ margin:20px 2px 0; font-size:14.5px; line-height:1.9; color:var(--blue-ink); }
+  .doc .start-cap{ margin:8px 2px 0; font-size:12.5px; line-height:1.8; color:#6d8a96; }
+  .doc .start-sep{ border:0; border-top:1px solid var(--line); margin:26px 0 22px; }
   </style>
-  <div class="page" id="page-about" aria-hidden="true">
+  <div class="page" id="page-start" aria-hidden="true">
     <div class="page-head">
       <button class="back" onclick="goBackOne();return false;" aria-label="戻る">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
       </button>
-      <h2>ストサポについて</h2>
+      <h2>初めての方へ</h2>
     </div>
     <div class="doc">
+      <div class="start-video"><iframe id="start-mv" data-src="https://player.vimeo.com/video/1245003954?h=0df4dd475c&amp;playsinline=1&amp;title=0&amp;byline=0&amp;portrait=0&amp;dnt=1" title="ストサポ紹介ムービー" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" allowfullscreen></iframe></div>
+      <p class="start-lead">ストサポは、入院中から退院後まで、ストーマのケアの学びを支える、スマートフォンのアプリです。ダウンロードや会員登録は要りません。</p>
+      <p class="start-cap">約2分のムービーです。ストサポでできることと、ホーム画面への追加のしかたをご紹介します。</p>
+      <hr class="start-sep">
+
       <p class="lead2">不安な入院生活から、<br>安心できる毎日へ</p>
 
       <p>ストーマ造設を迎えるとき、多くの方がさまざまな不安を抱えます。</p>
@@ -1887,9 +1898,9 @@
       <div class="howto-step"><span class="num">1</span><span class="tx"><b>動画を観る</b><span>装具交換の手順を、1本約1分の動画で見られます。苦手な手順だけを選んで、何度でもご覧ください。</span></span></div>
       <div class="howto-step"><span class="num">2</span><span class="tx"><b>サポートブック</b><span>冊子と同じ内容を画面でご覧いただけます。左右にめくってお読みください。文字が小さいときは、画面を指で広げると大きくなります。</span></span></div>
       <div class="howto-step"><span class="num">3</span><span class="tx"><b>用品を知る</b><span>ストーマ装具とケア用品を種類ごとにご案内します。サポートブックの該当ページや、オンラインストアの商品ページへ移動できます。</span></span></div>
-      <div class="howto-step"><span class="num">4</span><span class="tx"><b>チャットに相談</b><span>気になることを入力すると、よくあるご質問の中からお答えします。言葉が見つからないときは、下に出るボタンからお選びください。</span></span></div>
-      <div class="howto-step"><span class="num">5</span><span class="tx"><b>お悩みから知る</b><span>「漏れが不安」「においが気になる」など、困りごとから探せます。項目を選ぶと、関連するご質問と回答が並びます。</span></span></div>
-      <div class="howto-step"><span class="num">6</span><span class="tx"><b>福祉制度について</b><span>日常生活用具給付券の申請と使い方をご案内します。</span></span></div>
+      <div class="howto-step"><span class="num">4</span><span class="tx"><b>お悩みから知る</b><span>「漏れが不安」「においが気になる」など、困りごとから探せます。項目を選ぶと、関連するご質問と回答が並びます。</span></span></div>
+      <div class="howto-step"><span class="num">5</span><span class="tx"><b>福祉制度について</b><span>日常生活用具給付券の申請と使い方をご案内します。</span></span></div>
+      <div class="howto-step"><span class="num">6</span><span class="tx"><b>チャットに相談</b><span>気になることを入力すると、よくあるご質問の中からお答えします。言葉が見つからないときは、下に出るボタンからお選びください。</span></span></div>
 
       <h3>画面の下のタブ</h3>
       <p>画面の下に、ホーム・動画・相談・用品・メニューのタブがあります。どの画面からでも、ここから移動できます。「メニュー」には、このアプリのすべてのページが並んでいます。</p>
@@ -2190,12 +2201,20 @@
 
 
   // --- サブページ遷移 ---
+  // 初めての方へ：紹介ムービーは、画面を開いたときだけ読み込み、閉じたら止める
+  function ssStartVideo(on){
+    try{ var f=document.getElementById('start-mv'); if(!f) return;
+      if(on){ if(f.getAttribute('src')!==f.getAttribute('data-src')) f.setAttribute('src', f.getAttribute('data-src')); }
+      else if(f.getAttribute('src')){ f.setAttribute('src','about:blank'); }
+    }catch(e){}
+  }
   function openPage(id){
     try{ (window._pageStack = window._pageStack || []).push(id); }catch(e){}
     var el = document.getElementById(id);
     el.classList.add('open');
     el.setAttribute('aria-hidden','false');
     el.scrollTop = 0;
+    if(id === 'page-start') ssStartVideo(true);
     if(id === 'page-fukushi'){
       var t = document.getElementById('book-track');
       if(t){ t.scrollLeft = 0; }
@@ -2211,9 +2230,11 @@
     var el = document.getElementById(id);
     el.classList.remove('open');
     el.setAttribute('aria-hidden','true');
+    if(id === 'page-start') ssStartVideo(false);
     syncTab('home');
   }
   function closeAllPages(){
+    ssStartVideo(false);
     document.querySelectorAll('.page').forEach(function(p){
       p.classList.remove('open'); p.setAttribute('aria-hidden','true');
     });
