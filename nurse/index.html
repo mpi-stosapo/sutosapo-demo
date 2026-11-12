@@ -26,12 +26,16 @@
   .points li::marker { color:var(--teal); }
   .btn { display:block; margin:22px 0 0; padding:15px 16px; border-radius:14px; background:linear-gradient(160deg,#f4ac6e 0%,#eb9650 100%); color:#fff; font-size:16px; font-weight:700; text-align:center; text-decoration:none; box-shadow:0 5px 14px rgba(226,146,78,.32); }
   footer { margin-top:26px; font-size:12px; text-align:center; color:#6b8894; }
-  /* スマホを横にしたら動画を画面いっぱいに広げる（再生は止めない） */
-  @media (orientation:landscape) and (max-height:520px) {
+  /* スマホを横にしたら動画を画面いっぱいに広げる（再生は止めない）。画面の大きいタッチ端末(タブレット)も、横向きなら同じ表示にする */
+  @media (orientation:landscape) and (max-height:520px), (orientation:landscape) and (hover:none) and (pointer:coarse) and (max-height:900px) {
     html, body { background:#000; overflow:hidden; }
     .hero, .note, .points, .btn, footer { display:none; }
     main { max-width:none; margin:0; padding:0; }
     .video { position:fixed; inset:0; width:100vw; height:100vh; height:100dvh; aspect-ratio:auto; border-radius:0; box-shadow:none; background:#000; }
+    /* 向きを変えたあとの画面の高さを、実際の高さに合わせる(script で --vh を更新) */
+    html.has-vh .video { height:calc(var(--vh) * 100); }
+    /* ノッチ・角の丸み・ホームバーに、再生ボタンなどが隠れないようにする */
+    .video iframe { inset:auto; top:env(safe-area-inset-top,0px); left:env(safe-area-inset-left,0px); width:calc(100% - env(safe-area-inset-left,0px) - env(safe-area-inset-right,0px)); height:calc(100% - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)); }
   }
 </style>
 </head>
@@ -79,6 +83,15 @@
     var b=document.querySelector('a.btn');
     if(b) b.addEventListener('click',function(){ try{ localStorage.setItem('ss_intro_seen','1'); }catch(e){} });
   }catch(e){} })();
+</script>
+<script>
+  // 向きを変えたとき、画面の実際の高さに合わせる(一部のスマホで、横向きにしても高さが更新されないため)
+  (function(){
+    function setVh(){ try{ var d=document.documentElement; d.style.setProperty('--vh',(window.innerHeight/100)+'px'); d.classList.add('has-vh'); }catch(e){} }
+    setVh();
+    window.addEventListener('resize',setVh);
+    window.addEventListener('orientationchange',function(){ setVh(); setTimeout(setVh,250); setTimeout(setVh,700); });
+  })();
 </script>
 </body>
 </html>
