@@ -2,6 +2,25 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
+<script>
+// 初めて開いた人には、患者様向けの導入ページ(/start/)を見せる（初回のみ）。
+// ホーム画面のアイコンから開いた人、導入を見た端末、チャット履歴のある端末、検索ロボットは、そのままアプリを開く。
+// ?nointro=1 を付けると導入へ移さない(保守用)。?intro=1 を付けると、見た端末でも導入へ移す(確認用)。
+(function(){try{
+  var q=location.search||'';
+  if(/[?&]nointro=1(&|$)/.test(q)) return;
+  var force=/[?&]intro=1(&|$)/.test(q);
+  if(/bot|crawl|spider|slurp|bingpreview|facebookexternalhit|lighthouse|pagespeed|headless/i.test(navigator.userAgent)) return;
+  if(navigator.standalone===true||(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)) return;
+  if(!force){
+    if(localStorage.getItem('ss_intro_seen')||localStorage.getItem('ss_chat_v1')) return;
+    if(sessionStorage.getItem('ss_intro_bounce')) return;
+    sessionStorage.setItem('ss_intro_bounce','1');
+  }
+  location.replace('/start/'+q+location.hash);
+}catch(e){}})();
+</script>
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ストサポ｜ストーマライフ トータルサポート</title>
   <meta name="description" content="術直後から、退院後も続く安心を。ストーマケアの動画、サポートブック、用品、チャット相談、福祉制度の情報をスマホで確認できる、ストーマライフのトータルサポートアプリです。">
