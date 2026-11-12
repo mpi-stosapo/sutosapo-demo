@@ -1,8 +1,26 @@
 <!DOCTYPE html>
 <html lang="ja">
-<head>
-<meta name="robots" content="noindex,nofollow">
+<head><meta name="robots" content="noindex,nofollow">
 <meta charset="UTF-8">
+<script>
+// 初めて開いた人には、患者様向けの導入ページ(/start/)を見せる（初回のみ）。
+// ホーム画面のアイコンから開いた人、導入を見た端末、チャット履歴のある端末、検索ロボットは、そのままアプリを開く。
+// ?nointro=1 を付けると導入へ移さない(保守用)。?intro=1 を付けると、見た端末でも導入へ移す(確認用)。
+(function(){try{
+  var q=location.search||'';
+  if(/[?&]nointro=1(&|$)/.test(q)) return;
+  var force=/[?&]intro=1(&|$)/.test(q);
+  if(/bot|crawl|spider|slurp|bingpreview|facebookexternalhit|lighthouse|pagespeed|headless/i.test(navigator.userAgent)) return;
+  if(navigator.standalone===true||(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)) return;
+  if(!force){
+    if(localStorage.getItem('ss_intro_seen_test')||localStorage.getItem('ss_chat_v1')) return;
+    if(sessionStorage.getItem('ss_intro_bounce_test')) return;
+    sessionStorage.setItem('ss_intro_bounce_test','1');
+  }
+  location.replace('/test/start/'+q+location.hash);
+}catch(e){}})();
+</script>
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ストサポ｜ストーマライフ トータルサポート</title>
   <meta name="description" content="術直後から、退院後も続く安心を。ストーマケアの動画、サポートブック、用品、チャット相談、福祉制度の情報をスマホで確認できる、ストーマライフのトータルサポートアプリです。">
@@ -2643,6 +2661,5 @@
   })();
 
 </script>
-<div style="position:fixed;left:0;bottom:0;z-index:2147483647;background:#c00;color:#fff;font-size:11px;padding:2px 6px;pointer-events:none">確認用（本番ではありません）</div>
-</body>
+<div style="position:fixed;left:0;bottom:0;z-index:2147483647;background:#c00;color:#fff;font-size:11px;padding:2px 6px;pointer-events:none">確認用（本番ではありません）</div></body>
 </html>
