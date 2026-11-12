@@ -52,7 +52,7 @@
       <li>お悩みから知る/サポートブック/用品を知る/チャットに相談</li>
       <li>患者様にお渡しできるQRカードをご用意しています</li>
     </ul>
-    <a class="btn" href="https://stosapo.jp/">ストサポを開く</a>
+    <a class="btn" href="/test/">ストサポを開く</a>
     <footer>ストーマライフ トータルサポート「ストサポ」</footer>
   </main>
 <script>
@@ -72,6 +72,13 @@
         .catch(function(){});
     }catch(e){}
   })();
+</script>
+<script>
+  // 看護師向けページから「ストサポを開く」を押した人には、患者様向けの導入を見せない
+  (function(){ try{
+    var b=document.querySelector('a.btn');
+    if(b) b.addEventListener('click',function(){ try{ localStorage.setItem('ss_intro_seen_test','1'); }catch(e){} });
+  }catch(e){} })();
 </script>
 <div style="position:fixed;left:0;bottom:0;z-index:2147483647;background:#c00;color:#fff;font-size:11px;padding:2px 6px;pointer-events:none">確認用（本番ではありません）</div></body>
 </html>
