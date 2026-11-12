@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ja">
-<head><meta name="robots" content="noindex,nofollow">
+<head>
+<meta name="robots" content="noindex,nofollow">
 <meta charset="UTF-8">
 <script>
 // 初めて開いた人には、患者様向けの導入ページ(/start/)を見せる（初回のみ）。
@@ -13,11 +14,11 @@
   if(/bot|crawl|spider|slurp|bingpreview|facebookexternalhit|lighthouse|pagespeed|headless/i.test(navigator.userAgent)) return;
   if(navigator.standalone===true||(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)) return;
   if(!force){
-    if(localStorage.getItem('ss_intro_seen_test')||localStorage.getItem('ss_chat_v1')) return;
-    if(sessionStorage.getItem('ss_intro_bounce_test')) return;
-    sessionStorage.setItem('ss_intro_bounce_test','1');
+    if(localStorage.getItem('ss_intro_seen')||localStorage.getItem('ss_chat_v1')) return;
+    if(sessionStorage.getItem('ss_intro_bounce')) return;
+    sessionStorage.setItem('ss_intro_bounce','1');
   }
-  location.replace('/test/start/'+q+location.hash);
+  location.replace('/start/'+q+location.hash);
 }catch(e){}})();
 </script>
 
@@ -1836,6 +1837,72 @@
     <p class="set-note">医療的な判断が必要なときは、必ず医療機関にご相談ください。</p>
   </div>
 
+  <style>
+  /* ホーム画面に追加：ボタンのカードと案内の画面 */
+  .a2hs-card{ display:flex; align-items:center; gap:12px; margin:18px 0 6px; padding:13px 14px; background:var(--sky); border:1px solid var(--line); border-radius:var(--r-md); }
+  .a2hs-ic{ flex:none; width:40px; height:40px; border-radius:12px; background:#fff; color:var(--teal-deep); display:flex; align-items:center; justify-content:center; box-shadow:var(--shadow-sm); }
+  .a2hs-tx{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
+  .a2hs-tx b{ font-size:14.5px; font-weight:800; color:var(--blue-ink); }
+  .a2hs-tx span{ font-size:12.5px; line-height:1.6; color:#5d7a86; }
+  .a2hs-btn{ flex:none; border:0; cursor:pointer; padding:11px 16px; border-radius:999px; background:var(--teal-deep); color:#fff; font:inherit; font-size:14px; font-weight:800; }
+  .a2hs-btn:active{ opacity:.85; }
+  .a2hs-btn:focus-visible, .a2hs-close:focus-visible, .a2hs-copy:focus-visible{ outline:3px solid var(--blue); outline-offset:2px; }
+  .ss-standalone .a2hs-card, .ss-installed .a2hs-card{ display:none; }
+  @media (display-mode: standalone){ .a2hs-card{ display:none; } }
+  .a2hs-sheet{ position:fixed; inset:0; z-index:9999; display:none; align-items:flex-end; justify-content:center; background:rgba(15,32,40,.55); }
+  .a2hs-sheet.on{ display:flex; }
+  .a2hs-panel{ width:100%; max-width:480px; max-height:88vh; overflow:auto; background:#fff; border-radius:22px 22px 0 0; padding:20px 18px calc(18px + env(safe-area-inset-bottom,0px)); box-shadow:0 -10px 30px rgba(20,50,64,.18); color:var(--blue-ink); }
+  .a2hs-panel h3{ margin:0 0 6px; font-family:var(--font-display); font-weight:800; font-size:17px; color:var(--blue-ink); }
+  .a2hs-panel p{ margin:0 0 10px; font-size:13.5px; line-height:1.8; }
+  .a2hs-env{ display:none; }
+  .a2hs-sheet[data-env="ios"] .a2hs-env[data-env="ios"], .a2hs-sheet[data-env="ios-inapp"] .a2hs-env[data-env="ios-inapp"], .a2hs-sheet[data-env="android"] .a2hs-env[data-env="android"], .a2hs-sheet[data-env="other"] .a2hs-env[data-env="other"]{ display:block; }
+  .a2hs-steps{ list-style:none; counter-reset:a2; margin:0 0 6px; padding:0; }
+  .a2hs-steps li{ counter-increment:a2; position:relative; margin:0 0 10px; padding:11px 12px 11px 46px; background:var(--base); border:1px solid var(--line); border-radius:14px; font-size:14px; line-height:1.7; }
+  .a2hs-steps li::before{ content:counter(a2); position:absolute; left:12px; top:11px; width:25px; height:25px; border-radius:50%; background:var(--teal-deep); color:#fff; font-size:13px; font-weight:800; display:flex; align-items:center; justify-content:center; }
+  .a2hs-steps b{ font-weight:800; }
+  .a2hs-sh{ vertical-align:-3px; margin:0 2px; color:var(--teal-deep); }
+  .a2hs-note{ font-size:12.5px !important; color:#6d8a96; }
+  .a2hs-copy{ display:block; width:100%; margin:4px 0 10px; padding:12px; border:1px solid var(--teal-deep); background:#fff; color:var(--teal-deep); border-radius:999px; font:inherit; font-size:14px; font-weight:800; cursor:pointer; }
+  .a2hs-close{ display:block; width:100%; margin-top:6px; padding:13px; border:0; border-radius:999px; background:var(--sky); color:var(--blue-ink); font:inherit; font-size:14.5px; font-weight:800; cursor:pointer; }
+  </style>
+  <div class="a2hs-sheet" id="a2hs-sheet" role="dialog" aria-modal="true" aria-labelledby="a2hs-ttl" aria-hidden="true" onclick="if(event.target===this)ssA2hsClose();">
+    <div class="a2hs-panel">
+      <h3 id="a2hs-ttl">ホーム画面に追加する</h3>
+      <div class="a2hs-env" data-env="ios">
+        <p>ホーム画面に追加すると、アプリのように、1回押すだけでストサポを開けます。次の順番で操作してください。</p>
+        <ol class="a2hs-steps">
+          <li>画面の下にある<b>共有ボタン</b><svg class="a2hs-sh" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3"/><path d="m8 7 4-4 4 4"/><path d="M7 10H6a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg>（四角に上向きの矢印のマーク）を押します。見当たらないときは、右下の<b>「…」</b>を押すと出てきます。</li>
+          <li>出てきた一覧を上にスクロールして、<b>「ホーム画面に追加」</b>を押します。</li>
+          <li>「Webアプリとして開く」が出たらオンのままにして、右上の<b>「追加」</b>を押します。</li>
+        </ol>
+        <p class="a2hs-note">追加すると、ホーム画面にストサポのアイコンができます。</p>
+      </div>
+      <div class="a2hs-env" data-env="ios-inapp">
+        <p>いま開いているアプリ（LINEなど）の中では、ホーム画面に追加できません。Safariで開き直してから、もう一度このボタンを押してください。</p>
+        <ol class="a2hs-steps">
+          <li>下の<b>「アドレスをコピー」</b>を押します。</li>
+          <li><b>Safari</b>（青いコンパスのアイコン）を開き、上のアドレス欄に貼り付けて開きます。</li>
+          <li>開いたら、「初めての方へ」または「使い方」から、もう一度<b>「追加する」</b>を押します。</li>
+        </ol>
+        <button type="button" class="a2hs-copy" onclick="ssA2hsCopy(this);return false;">アドレスをコピー</button>
+        <p class="a2hs-note">画面の右下や右上の「…」から、「Safariで開く」を選んでも開き直せます。</p>
+      </div>
+      <div class="a2hs-env" data-env="android">
+        <p>ホーム画面に追加すると、アプリのように、1回押すだけでストサポを開けます。次の順番で操作してください。</p>
+        <ol class="a2hs-steps">
+          <li>ブラウザ（Chrome）の右上にある<b>「︙」</b>を押します。</li>
+          <li><b>「ホーム画面に追加」</b>（または<b>「アプリをインストール」</b>）を押します。</li>
+          <li>確認の画面が出たら、<b>「追加」</b>（または「インストール」）を押します。</li>
+        </ol>
+      </div>
+      <div class="a2hs-env" data-env="other">
+        <p>ホーム画面への追加は、スマートフォンで行います。スマートフォンのブラウザ（iPhoneはSafari、AndroidはChrome）でストサポを開いて、もう一度このボタンを押してください。</p>
+        <button type="button" class="a2hs-copy" onclick="ssA2hsCopy(this);return false;">アドレスをコピー</button>
+      </div>
+      <button type="button" class="a2hs-close" onclick="ssA2hsClose();return false;">閉じる</button>
+    </div>
+  </div>
+
   <!-- ===== サブページ: 初めての方へ（紹介ムービー＋ストサポについて） ===== -->
   <style>
   #page-start{ background:var(--base); }
@@ -1865,6 +1932,7 @@
       <div class="start-video"><iframe id="start-mv" data-src="https://player.vimeo.com/video/1245003954?h=0df4dd475c&amp;playsinline=1&amp;title=0&amp;byline=0&amp;portrait=0&amp;dnt=1" title="ストサポ紹介ムービー" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" allowfullscreen></iframe></div>
       <p class="start-lead">ストサポは、入院中から退院後まで、ストーマのケアの学びを支える、スマートフォンのアプリです。ダウンロードや会員登録は要りません。</p>
       <p class="start-cap">約2分のムービーです。ストサポでできることと、ホーム画面への追加のしかたをご紹介します。</p>
+      <div class="a2hs-card"><span class="a2hs-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M12 8v8M8 12h8"/></svg></span><span class="a2hs-tx"><b>ホーム画面に追加</b><span>アプリのように、ホーム画面からすぐ開けるようになります。</span></span><button type="button" class="a2hs-btn" onclick="ssA2hs();return false;">追加する</button></div>
       <hr class="start-sep">
 
       <p class="lead2">不安な入院生活から、<br>安心できる毎日へ</p>
@@ -1912,6 +1980,7 @@
     </div>
     <div class="doc">
       <p>ストサポは、スマートフォンでも、パソコンでもご覧いただけます。アプリのダウンロードや会員登録は必要ありません。</p>
+      <div class="a2hs-card"><span class="a2hs-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M12 8v8M8 12h8"/></svg></span><span class="a2hs-tx"><b>ホーム画面に追加</b><span>アプリのように、ホーム画面からすぐ開けるようになります。</span></span><button type="button" class="a2hs-btn" onclick="ssA2hs();return false;">追加する</button></div>
 
       <h3>ホーム画面からできること</h3>
       <div class="howto-step"><span class="num">1</span><span class="tx"><b>動画を観る</b><span>装具交換の手順を、1本約1分の動画で見られます。苦手な手順だけを選んで、何度でもご覧ください。</span></span></div>
@@ -2220,6 +2289,36 @@
 
 
   // --- サブページ遷移 ---
+  // ホーム画面に追加：Androidは確認画面をそのまま出し、出せない端末は手順の案内を出す
+  var ssA2hsEv=null;
+  window.addEventListener('beforeinstallprompt',function(e){ e.preventDefault(); ssA2hsEv=e; });
+  window.addEventListener('appinstalled',function(){ ssA2hsEv=null; document.documentElement.classList.add('ss-installed'); ssA2hsClose(); });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape') ssA2hsClose(); });
+  function ssA2hsEnv(){
+    var ua=navigator.userAgent||'';
+    var ios=/iPhone|iPad|iPod/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+    var inapp=/Line\/|FBAN|FBAV|FB_IAB|Instagram|MicroMessenger|Twitter|KAKAOTALK|NAVER|Messenger/i.test(ua);
+    if(ios) return inapp?'ios-inapp':'ios';
+    if(/Android/i.test(ua)) return 'android';
+    return 'other';
+  }
+  function ssA2hs(){
+    if(ssA2hsEv){ var ev=ssA2hsEv; ssA2hsEv=null; try{ ev.prompt(); return; }catch(e){} }
+    var s=document.getElementById('a2hs-sheet'); if(!s) return;
+    s.setAttribute('data-env', ssA2hsEnv());
+    s.classList.add('on'); s.setAttribute('aria-hidden','false');
+    var c=s.querySelector('.a2hs-close'); if(c) try{ c.focus(); }catch(e){}
+  }
+  function ssA2hsClose(){
+    var s=document.getElementById('a2hs-sheet'); if(!s) return;
+    s.classList.remove('on'); s.setAttribute('aria-hidden','true');
+  }
+  function ssA2hsCopy(btn){
+    var u=location.origin+'/';
+    var ok=function(){ var t=btn.textContent; btn.textContent='コピーしました'; setTimeout(function(){ btn.textContent=t; },2500); };
+    var fb=function(){ try{ var ta=document.createElement('textarea'); ta.value=u; ta.setAttribute('readonly',''); ta.style.cssText='position:fixed;left:-9999px;top:0;'; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); ok(); }catch(e){ btn.textContent=u; } };
+    try{ navigator.clipboard.writeText(u).then(ok,fb); }catch(e){ fb(); }
+  }
   // 初めての方へ：紹介ムービーは、画面を開いたときだけ読み込み、閉じたら止める
   function ssStartVideo(on){
     try{ var f=document.getElementById('start-mv'); if(!f) return;
@@ -2661,5 +2760,6 @@
   })();
 
 </script>
-<div style="position:fixed;left:0;bottom:0;z-index:2147483647;background:#c00;color:#fff;font-size:11px;padding:2px 6px;pointer-events:none">確認用（本番ではありません）</div></body>
+<div style="position:fixed;left:0;bottom:0;z-index:2147483647;background:#c00;color:#fff;font-size:11px;padding:2px 6px;pointer-events:none">確認用（本番ではありません）</div>
+</body>
 </html>
