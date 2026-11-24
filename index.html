@@ -12,7 +12,7 @@
   var q=location.search||'';
   if(/[?&]nointro=1(&|$)/.test(q)) return;
   var force=/[?&]intro=1(&|$)/.test(q);
-  if(/bot|crawl|spider|slurp|bingpreview|facebookexternalhit|lighthouse|pagespeed|headless/i.test(navigator.userAgent)) return;
+  if(/bot|crawl|spider|slurp|bingpreview|facebookexternalhit|lighthouse|pagespeed|headless|google/i.test(navigator.userAgent)) return;
   if(navigator.standalone===true||(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)) return;
   if(!force){
     if(localStorage.getItem('ss_intro_seen')||localStorage.getItem('ss_chat_v1')) return;
